@@ -18,6 +18,6 @@
 
 # Start Application
 ### npm install
-### npm index.js
+### node index.js or nodemon index.js
 ## On Browser
 ### Check out http://localhost:3000/api
