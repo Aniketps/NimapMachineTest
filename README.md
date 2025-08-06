@@ -1,7 +1,7 @@
 # Database
 ## Database Name
-mysql> create database nimapassignment;
-mysql> use nimapassignment;
+### mysql> create database nimapassignment;
+### mysql> use nimapassignment;
 
 ## Category Table
 ### mysql> create table categories(categoryID int primary key auto_increment, categoryName varchar(200) not null unique);
