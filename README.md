@@ -21,3 +21,7 @@
 ### node index.js or nodemon index.js
 ## On Browser
 ### Check out http://localhost:3000/api
+
+# API References
+## Check out below given link to understand endpoints
+#### https://documenter.getpostman.com/view/43655580/2sB3BDHqVa
