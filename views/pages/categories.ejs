@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset='utf-8'>
+    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <title>Page Title</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.1.3/dist/css/bootstrap.min.css"
+        integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+</head>
+
+<body id="body">
+    <%- include("../components/header.ejs")%>
+        <div class="container p-0 d-flex justify-content-between align-items-center">
+            <h2>Categories</h2>
+            <div>
+                <button class="btn btn-primary" id="prev">Prev</button>
+                <button class="btn btn-primary" id="next">Next</button>
+                <button class="btn btn-primary" id="new">Add Category</button>
+            </div>
+        </div>
+        <table class="table container">
+            <thead class="thead-dark">
+                <tr>
+                    <th scope="col">Category ID</th>
+                    <th scope="col">Category Name</th>
+                    <th scope="col">Update</th>
+                    <th scope="col">Delete</th>
+                </tr>
+            </thead>
+            <tbody id="categories">
+
+            </tbody>
+        </table>
+        <script>
+            const data = <%- JSON.stringify(data) %>;
+            let currentPage = 1;
+            let selectedID = '';
+            let selectedName = '';
+
+            function renderTable(page) {
+                const tableBody = document.getElementById('categories');
+                tableBody.innerHTML = '';
+
+                if(Object.keys(data).length == 0){
+                    let h = document.createElement("h1");
+                    h.innerHTML = "No Entries"
+                    tableBody.appendChild(h);
+                }
+
+                if (data[page]) {
+                    data[page].forEach(row => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                        <td>${row.categoryID}</td>
+                        <td>${row.categoryName}</td>
+                        <td><button onclick="categoryUpdateID(${row.categoryID}, '${row.categoryName}')" class="btn btn-warning">Update</button></td>
+                        <td><button onclick="categoryDeleteID(${row.categoryID})" class="btn btn-danger">Delete</button></td>
+                    `;
+                        tableBody.appendChild(tr);
+                    });
+                }
+            }
+            renderTable(currentPage);
+            document.getElementById('next').addEventListener('click', () => {
+                if (data[currentPage + 1]) {
+                    currentPage++;
+                    renderTable(currentPage);
+                }
+            });
+
+            document.getElementById('prev').addEventListener('click', () => {
+                if (data[currentPage - 1]) {
+                    currentPage--;
+                    renderTable(currentPage);
+                }
+            });
+
+
+            function openUpdate(){
+                let body = document.getElementById("body");
+                let updateContainer = `
+                <form id="updateForm" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); box-shadow: 1px 1px 2px rgba(0, 0, 255, 0.461); border-radius: 20px; gap: 20px; background-color: white;" class="py-4 px-5 w-50 text-center container d-flex flex-column">
+                    <h1>Update Category</h1>
+                    <input id="name" value="${selectedName}" class="form-control" type="text" name="name" placeholder="Category Name">
+                    <div class="container w-75 d-flex justify-content-between">
+                        <button onclick="closeUpdate()" type="button" class="btn btn-primary">Cancel</button>
+                        <button onclick="update()" type="button" class="btn btn-warning">Update</button>
+                    </div>
+                </form>
+                `;
+                body.innerHTML += updateContainer;
+            }
+            function update(){
+                let name = document.getElementById("name").value;
+
+                fetch(`categories/${selectedID}`, {
+                    method : "put",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body : JSON.stringify({ "name" : name })
+                }).then(res => res.json()).then(data =>{
+                    if("error" in data){
+                        confirmationOpen(data.message, data.error);
+                    }else{
+                        confirmationOpen(data.message);
+                        closeUpdate();
+                    }
+                }).catch((err)=>{
+                    console.log(err);
+                })
+            }
+
+            function categoryUpdateID(id, name){
+                selectedID = id;
+                selectedName = name;
+                openUpdate();
+            }
+            function categoryDeleteID(id){
+                selectedID = id;
+                openDelete();
+            }
+
+            function closeUpdate(){
+                let updateContainer = document.getElementById("updateForm");
+                updateContainer.remove();
+            }
+
+            function closeDelete(){
+                let deleteForm = document.getElementById("deleteForm");
+                deleteForm.remove();
+            }
+
+            function openDelete(){
+                let body = document.getElementById("body");
+                let deleteContainer = `
+                <form id="deleteForm" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); box-shadow: 1px 1px 2px rgba(0, 0, 255, 0.461); border-radius: 20px; gap: 20px; background-color: white;" class="py-4 px-5 w-50 text-center container d-flex flex-column">
+                    <h1>Delete Category</h1>
+                    <p>Are you sure?</p>
+                    <div class="container w-75 d-flex justify-content-between">
+                        <button onclick="closeDelete()" type="button" class="btn btn-primary">No</button>
+                        <button onclick="deleteByID()" type="button" class="btn btn-warning">Yes</button>
+                    </div>
+                </form>
+                `;
+                body.innerHTML += deleteContainer;
+            }
+
+            function confirmationOpen(title, sub){
+                if(!sub) sub = '';
+                let body = document.getElementById("body");
+                let updateContainer = `
+                <form id="confirmationBox" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); box-shadow: 1px 1px 2px rgba(0, 0, 255, 0.461); border-radius: 20px; gap: 20px; background-color: white;" class="py-4 px-5 w-50 text-center container d-flex flex-column">
+                    <h1>${title}</h1>
+                    <p>${sub}</p>
+                    <p>Please Refresh</p>
+                    <div class="container w-75 d-flex justify-content-center">
+                        <button onclick="confirmationClose()" type="button" class="btn btn-primary">close</button>
+                    </div>
+                </form>
+                `;
+                body.innerHTML += updateContainer;
+            }
+            function confirmationClose(){
+                let confirmationBox = document.getElementById("confirmationBox");
+                confirmationBox.remove();
+            }
+
+            function deleteByID(){
+                fetch(`categories/${selectedID}`, {
+                    method : "delete",
+                }).then(res => res.json()).then(data =>{
+                    if("error" in data){
+                        confirmationOpen(data.message, data.error);
+                    }else{
+                        confirmationOpen(data.message);
+                        closeDelete();
+                    }
+                }).catch((err)=>{
+                    console.log(err);
+                })
+            }
+
+            function openNew(){
+                let body = document.getElementById("body");
+                
+                let newContainer = `
+                <form id="newForm" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); box-shadow: 1px 1px 2px rgba(0, 0, 255, 0.461); border-radius: 20px; gap: 20px; background-color: white;" class="py-4 px-5 w-50 text-center container d-flex flex-column">
+                    <h1>New Category</h1>
+                    <input id="name" class="form-control" type="text" name="name" placeholder="Category Name">
+                    <div class="container w-75 d-flex justify-content-between">
+                        <button onclick="closeNew()" type="button" class="btn btn-primary">Cancel</button>
+                        <button onclick="add()" type="button" class="btn btn-warning">Add</button>
+                    </div>
+                </form>
+                `;
+                body.innerHTML += newContainer;
+            }
+
+            function add(){
+                let name = document.getElementById("name").value;
+
+                fetch(`categories/new`, {
+                    method : "post",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body : JSON.stringify({ "name" : name })
+                }).then(res => res.json()).then(data =>{
+                    if("error" in data){
+                        confirmationOpen(data.message, data.error);
+                    }else{
+                        confirmationOpen(data.message);
+                        closeNew();
+                    }
+                }).catch((err)=>{
+                    console.log(err);
+                })
+            }
+            function closeNew(){
+                let newContainer = document.getElementById("newForm");
+                newContainer.remove();
+            }
+
+            document.getElementById('new').addEventListener('click', () => {
+                openNew();
+            });
+        </script>
+</body>
+
+</html>
