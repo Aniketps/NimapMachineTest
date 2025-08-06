@@ -15,3 +15,9 @@
 
 ## ER Diagram
 ![Product Scheme](https://github.com/Aniketps/Project-Images/blob/main/ERDiagram.png)
+
+# Start Application
+### npm install
+### npm index.js
+## On Browser
+### Check out http://localhost:3000/api
