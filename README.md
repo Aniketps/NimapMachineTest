@@ -1,3 +1,10 @@
+# .env
+### dbName = nimapassignment
+### dbUser = root
+### dbHost = localhost
+### dbPass = root
+### serverPort = 3000
+
 # Database
 ## Database Name
 ### mysql> create database nimapassignment;
